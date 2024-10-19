@@ -3,3 +3,4 @@ PyQt5
 numpy
 torch
 ffmpeg-python
+pyinstaller
