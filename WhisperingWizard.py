@@ -13,7 +13,6 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
 
 from downloaders.DownloadFFmpeg import DownloadFFmpegThread
-#from downloaders.InstallWhisper import InstallWhisperThread
 
 # Check if running from a PyInstaller bundle
 if hasattr(sys, '_MEIPASS'):
