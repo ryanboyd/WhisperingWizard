@@ -1,6 +1,3 @@
 openai-whisper
 PyQt5
-numpy
-torch
-ffmpeg-python
-pyinstaller
+requests

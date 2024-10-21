@@ -166,6 +166,6 @@ installed/
 # other folders used for testing/development
 audiofiles/
 transcribed/
-
-# installer file, omitted for time being
-installer.py
+downloaders/ffmpeg
+*.bat
+venv-*/

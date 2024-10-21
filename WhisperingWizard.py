@@ -1,13 +1,28 @@
+# These are the primary imports for the application itself
 import sys
 import os
 import ctypes
-import whisper
+import itertools
+import time
 import csv
+import whisper
 from datetime import datetime
 from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout, QComboBox,
                              QPushButton, QFileDialog, QCheckBox, QRadioButton, QButtonGroup, QProgressBar, QSizePolicy, QMessageBox)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
+
+from downloaders.DownloadFFmpeg import DownloadFFmpegThread
+#from downloaders.InstallWhisper import InstallWhisperThread
+
+# Check if running from a PyInstaller bundle
+if hasattr(sys, '_MEIPASS'):
+    # When bundled, the icon will be in the _MEIPASS directory, in the _include folder
+    icon_path = os.path.join(sys._MEIPASS, 'wizard_icon.ico')
+else:
+    # When running directly, use the local path
+    icon_path = 'wizard_icon.ico'
+
 
 
 class TranscriptionWorker(QThread):
@@ -26,10 +41,24 @@ class TranscriptionWorker(QThread):
 
     def run(self):
         try:
-            file_extensions = ["mp3", "wav", "flac", "m4a"]
+            file_extensions = ["mp3", "wav", "flac", "m4a", "ogg", "mp4", "webm"]
 
-            self.update_status_signal.emit(f"Downloading/loading model: {self.model_name}")
-            model = whisper.load_model(self.model_name)
+            self._spinner_running = True
+            spinner_thread = QThread()
+            spinner_thread.run = self.start_spinner
+            spinner_thread.start()
+
+            # Define the custom directory for models
+            model_dir = "whisper_models"
+            os.makedirs(model_dir, exist_ok=True)
+
+            # Load the model from the custom directory
+            model = whisper.load_model(self.model_name, download_root=model_dir)
+
+            # Stop the spinner once the model is downloaded
+            self._spinner_running = False
+            spinner_thread.wait()
+
             self.update_status_signal.emit("Model loaded successfully.")
 
             files_to_process = self.list_files_with_extensions(self.input_folder, file_extensions)
@@ -105,6 +134,13 @@ class TranscriptionWorker(QThread):
                     file_list.append(os.path.join(root, file))
         return file_list
 
+    def start_spinner(self):
+        """Show spinner animation in the status bar while downloading model."""
+        spinner = itertools.cycle(["|", "/", "–", "\\"])
+        while self._spinner_running:
+            self.update_status_signal.emit(f"Downloading/loading model: {self.model_name}... {next(spinner)}")
+            time.sleep(0.2)
+
 
 class TranscriptionApp(QWidget):
 
@@ -121,7 +157,7 @@ class TranscriptionApp(QWidget):
 
         self.model_label = QLabel("Choose Whisper Model:")
         self.model_combo = QComboBox()
-        self.model_combo.addItems(["turbo", "small", "medium", "large"])
+        self.model_combo.addItems(["turbo", "tiny", "base", "small", "medium", "large"])
         layout.addWidget(self.model_label)
         layout.addWidget(self.model_combo)
 
@@ -164,11 +200,34 @@ class TranscriptionApp(QWidget):
         layout.addWidget(self.current_status_label)
 
         self.transcribe_button = QPushButton("Start Transcription")
-        self.transcribe_button.setEnabled(False)
         self.transcribe_button.clicked.connect(self.start_transcription)
         layout.addWidget(self.transcribe_button)
 
         self.setLayout(layout)
+
+        # Disable main buttons until FFmpeg setup is complete
+        self.input_folder_button.setEnabled(False)
+        self.output_folder_button.setEnabled(False)
+        self.transcribe_button.setEnabled(False)
+
+        # Start the FFmpeg download in a separate thread after UI initialization
+        self.ffmpeg_thread = DownloadFFmpegThread(self)
+        self.ffmpeg_thread.update_progress_signal.connect(self.progress_bar.setValue)
+        self.ffmpeg_thread.update_status_signal.connect(self.update_status)
+        self.ffmpeg_thread.ffmpeg_complete_signal.connect(self.on_ffmpeg_complete)
+        self.ffmpeg_thread.start()
+
+    def on_ffmpeg_complete(self):
+        """Re-enable UI components when FFmpeg setup is complete."""
+        self.update_status("FFmpeg is installed.")
+        self.progress_bar.setValue(0)
+        self.input_folder_button.setEnabled(True)
+        self.output_folder_button.setEnabled(True)
+
+    def update_status(self, message):
+        """Update the status message in the status label."""
+        self.current_status_label.setText(f"Current Status: {message}")
+        self.current_status_label.repaint()  # Force UI to refresh
 
     def style_label(self, label):
         label.setStyleSheet("border: 1px solid black; padding: 3px;")
@@ -251,16 +310,26 @@ class TranscriptionApp(QWidget):
         self.update_status("Transcription complete!")
         self.toggle_ui(True)
 
+        # Show a message box when transcription is complete
+        msg_box = QMessageBox()
+        msg_box.setIcon(QMessageBox.Information)
+        msg_box.setWindowTitle("Transcription Complete")
+        msg_box.setText("Transcription complete!")
+        msg_box.setStandardButtons(QMessageBox.Ok)
+        msg_box.exec_()  # Display the message box
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     # Set the global application icon (for the taskbar)
-    app.setWindowIcon(QIcon("wizard_icon.ico"))
+    app.setWindowIcon(QIcon(icon_path))
+    
 
     # Explicitly set taskbar icon for Windows using ctypes
     if sys.platform.startswith('win'):
-        myappid = 'mycompany.myproduct.subproduct.version'  # Arbitrary string
+        myappid = 'RyanBoyd.WhisperingWizard'  # Arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     window = TranscriptionApp()
