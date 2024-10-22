@@ -93,6 +93,7 @@ class TranscriptionWorker(QThread):
                             overall_progress = int((i + 1) / total_files * 100)
                             self.update_progress_signal.emit(overall_progress)
                 except Exception as e:
+                    print(f"Error during transcription: {e}", file=sys.stderr)
                     self.error_signal.emit(f"Error writing to output folder: {e}")
                     return
             else:
@@ -112,6 +113,7 @@ class TranscriptionWorker(QThread):
                                 else:
                                     output_file.write(f"{text}\n")
                     except Exception as e:
+                        print(f"Error during transcription: {e}", file=sys.stderr)
                         self.error_signal.emit(f"Error writing to output folder: {e}")
                         return
 
@@ -121,6 +123,7 @@ class TranscriptionWorker(QThread):
             self.transcription_complete_signal.emit()
 
         except Exception as e:
+            print(f"Error during transcription: {e}", file=sys.stderr)
             self.error_signal.emit(f"Error during transcription: {e}")
 
     def get_csv_filename(self):
