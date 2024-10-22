@@ -88,15 +88,23 @@ class DownloadFFmpegThread(QThread):
                     zip_ref.extractall(ffmpeg_dir)
                 ffmpeg_bin_dir = next(ffmpeg_dir.glob("*/bin"))  # Find bin folder in extracted contents
                 shutil.move(ffmpeg_bin_dir / "ffmpeg.exe", ffmpeg_executable)
+
             elif platform.system() == "Darwin":
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                     zip_ref.extractall(ffmpeg_dir)
                 shutil.move(ffmpeg_dir / "ffmpeg", ffmpeg_executable)
+
+                # Add this line to give execute permission
+                ffmpeg_executable.chmod(0o755)
+
             elif platform.system() == "Linux":
                 with tarfile.open(zip_path, 'r:xz') as tar_ref:
                     tar_ref.extractall(ffmpeg_dir)
                 ffmpeg_bin_dir = next(ffmpeg_dir.glob("*/ffmpeg"))
                 shutil.move(ffmpeg_bin_dir, ffmpeg_executable)
+
+                # Add this line to give execute permission
+                ffmpeg_executable.chmod(0o755)
 
             # Stop the spinner once extraction is done
             self._spinner_running = False
