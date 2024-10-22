@@ -168,4 +168,5 @@ audiofiles/
 transcribed/
 downloaders/ffmpeg
 *.bat
+*.sh
 venv-*/
