@@ -7,7 +7,7 @@ This is a **zero-hassle** app designed for folks who just want to get their audi
 ## Features ✨
 
 - **Magical FFmpeg Setup**: You don’t need to lift a finger (or type a command) to install FFmpeg. Whispering Wizard downloads its own local copy – no muss, no fuss.
-- **Whisper Model Support**: Choose from a range of Whisper models – from the tiny `turbo` to the mighty `large` – depending on how fast or accurate you need your transcriptions to be.
+- **Whisper Model Support**: Choose from a range of Whisper models – from `tiny` to the mighty `large` and `turbo` models – depending on how fast or accurate you need your transcriptions to be.
 - **Audio Format Wizardry**: Handles `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.mp4`, `.webm`, and more! Your files will feel like they’re in a mystical cauldron of compatibility.
 - **Timestamp Sorcery**: Want timestamps? Just check a box and they’ll appear in your transcripts like clockwork.
 - **Custom Output Magic**: Get your transcriptions as individual `.txt` files or a single, organized `.csv`. Your text, your way.
@@ -42,7 +42,7 @@ No need to go on a quest for FFmpeg – Whispering Wizard **doesn’t even look 
 ## FAQ 🧩
 
 - **Q**: What audio formats can Whispering Wizard handle?
-  - **A**: Anything from `.mp3`, `.wav`, `.flac`, to `.m4a`, `.ogg`, `.mp4`, `.webm`. If it makes sound, we can probably transcribe it.
+  - **A**: Anything from `.mp3`, `.wav`, `.flac`, to `.m4a`, `.ogg`, `.mp4`, `.webm`. If it makes sound, *Whispering Wizard* can probably transcribe it.
 
 - **Q**: Does Whispering Wizard need an internet connection?
   - **A**: Only for the first time, when it downloads its very own copy of FFmpeg and any time you need to download a new Whisper model. After that, you’re good to go offline and transcribe to your heart's content!
@@ -60,13 +60,13 @@ While **Whispering Wizard** makes it easy to transcribe your audio files with ju
 
 - **OpenAI's Whisper**: Whispering Wizard uses OpenAI’s powerful Whisper models for transcription. These models are responsible for converting your audio into text with high accuracy. They’re the true magic at work here.
 
-- **FFmpeg**: Handling all the audio decoding, conversion, and processing, FFmpeg is a world-class multimedia framework. Whispering Wizard doesn’t require you to install FFmpeg separately—it automatically downloads its own copy to work with. Kudos — as always — to the unbelievably work that the FFmpeg team puts into maintaining such a versatile and world-class tool!
+- **FFmpeg**: Handling all the audio decoding, conversion, and processing, FFmpeg is a world-class multimedia framework. Whispering Wizard doesn’t require you to install FFmpeg separately—it automatically downloads its own copy to work with. Kudos — as always — to the unbelievable work that the FFmpeg team puts into maintaining such a versatile and world-class tool!
 
 ## What Whispering Wizard *Really* Does 🧙‍♂️
 
 Whispering Wizard is simply a **graphical user interface (GUI)** designed to make these amazing technologies more accessible. It provides a user-friendly way to tap into the power of Whisper and FFmpeg without requiring you to dive into the command line.
 
-In other words, Whispering Wizard is **a wrapper** around these tools, guiding you through the transcription process so you don’t have to worry about the technical details. We just make it easier for you to leverage the brilliance of the real wizards behind the scenes.
+In other words, Whispering Wizard is **a wrapper** around these tools, guiding you through the transcription process so you don’t have to worry about the technical details. This application just make it easier for you to leverage the brilliance of the real wizards behind the scenes.
 
 ## Shout-Outs 💖
 
