@@ -66,7 +66,7 @@ While **Whispering Wizard** makes it easy to transcribe your audio files with ju
 
 Whispering Wizard is simply a **graphical user interface (GUI)** designed to make these amazing technologies more accessible. It provides a user-friendly way to tap into the power of Whisper and FFmpeg without requiring you to dive into the command line.
 
-In other words, Whispering Wizard is **a wrapper** around these tools, guiding you through the transcription process so you don’t have to worry about the technical details. We just make it easier for you to leverage the brilliance of the real wizards behind the scenes.
+In other words, Whispering Wizard is **a wrapper** around these tools, guiding you through the transcription process so you don’t have to worry about the technical details. This application just make it easier for you to leverage the brilliance of the real wizards behind the scenes.
 
 ## Shout-Outs 💖
 
