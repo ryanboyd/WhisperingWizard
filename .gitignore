@@ -166,7 +166,7 @@ installed/
 # other folders used for testing/development
 audiofiles/
 transcribed/
-downloaders/ffmpeg
+ffmpeg_tools/ffmpeg
 *.bat
 *.sh
 venv-*/
