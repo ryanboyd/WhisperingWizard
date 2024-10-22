@@ -60,7 +60,7 @@ While **Whispering Wizard** makes it easy to transcribe your audio files with ju
 
 - **OpenAI's Whisper**: Whispering Wizard uses OpenAI’s powerful Whisper models for transcription. These models are responsible for converting your audio into text with high accuracy. They’re the true magic at work here.
 
-- **FFmpeg**: Handling all the audio decoding, conversion, and processing, FFmpeg is a world-class multimedia framework. Whispering Wizard doesn’t require you to install FFmpeg separately—it automatically downloads its own copy to work with. Kudos — as always — to the unbelievably work that the FFmpeg team puts into maintaining such a versatile and world-class tool!
+- **FFmpeg**: Handling all the audio decoding, conversion, and processing, FFmpeg is a world-class multimedia framework. Whispering Wizard doesn’t require you to install FFmpeg separately—it automatically downloads its own copy to work with. Kudos — as always — to the unbelievable work that the FFmpeg team puts into maintaining such a versatile and world-class tool!
 
 ## What Whispering Wizard *Really* Does 🧙‍♂️
 
