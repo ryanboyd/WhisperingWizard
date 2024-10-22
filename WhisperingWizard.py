@@ -22,7 +22,10 @@ else:
     # When running directly, use the local path
     icon_path = 'wizard_icon.ico'
 
-
+# Write logs for the application
+os.makedirs("logs", exist_ok=True)
+sys.stdout = open('logs/ww-out.log', 'w', encoding='utf-8-sig')
+sys.stderr = open('logs/ww-warn_err.log', 'w')
 
 class TranscriptionWorker(QThread):
     update_status_signal = pyqtSignal(str)
