@@ -1,4 +1,5 @@
 # These are the primary imports for the application itself
+import traceback
 import sys
 import os
 import ctypes
@@ -12,7 +13,8 @@ from PyQt5.QtWidgets import (QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLa
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QIcon
 
-from downloaders.DownloadFFmpeg import DownloadFFmpegThread
+from ffmpeg_tools.DownloadFFmpeg import DownloadFFmpegThread
+#import ffmpeg_tools.ffmpegPreprocessing
 
 # Check if running from a PyInstaller bundle
 if hasattr(sys, '_MEIPASS'):
@@ -22,8 +24,21 @@ else:
     # When running directly, use the local path
     icon_path = 'wizard_icon.ico'
 
+import os
+
+
+def normalize_path(path):
+    # Normalize slashes according to the operating system
+    path = os.path.normpath(path)
+    # Add long path prefix for Windows if needed
+    if os.name == 'nt' and not path.startswith('\\\\?\\') and len(path) > 260:
+        return '\\\\?\\' + os.path.abspath(path)
+    return path
+
+
 # Write logs for the application
-os.makedirs("logs", exist_ok=True)
+os.makedirs(normalize_path("logs"), exist_ok=True)
+#os.makedirs(normalize_path("mediator"), exist_ok=True)
 sys.stdout = open('logs/ww-out.log', 'w', encoding='utf-8-sig')
 sys.stderr = open('logs/ww-warn_err.log', 'w')
 
@@ -51,7 +66,7 @@ class TranscriptionWorker(QThread):
             spinner_thread.start()
 
             # Define the custom directory for models
-            model_dir = "whisper_models"
+            model_dir = normalize_path("whisper_models")
             os.makedirs(model_dir, exist_ok=True)
 
             # Load the model from the custom directory
@@ -64,6 +79,7 @@ class TranscriptionWorker(QThread):
             self.update_status_signal.emit("Model loaded successfully.")
 
             files_to_process = self.list_files_with_extensions(self.input_folder, file_extensions)
+
             total_files = len(files_to_process)
 
             if self.output_format == "csv":
@@ -71,13 +87,18 @@ class TranscriptionWorker(QThread):
                 csv_filepath = os.path.join(self.output_folder, csv_filename)
 
                 try:
-                    with open(csv_filepath, mode='w', newline='', encoding='utf-8-sig') as csv_file:
+                    with open(normalize_path(csv_filepath), mode='w', newline='', encoding='utf-8-sig') as csv_file:
                         csv_writer = csv.writer(csv_file)
                         header = ['filename', 'start_time', 'stop_time', 'text'] if self.include_timestamps else ['filename', 'text']
                         csv_writer.writerow(header)
 
                         for i, input_file in enumerate(files_to_process):
                             self.update_status_signal.emit(f"Transcribing file: {os.path.basename(input_file)}")
+
+                            #temp_wav_file = os.path.join("mediator", "output.wav")
+                            #ffmpeg_tools.ffmpegPreprocessing.convert_to_wav(input_file=input_file, output_file=temp_wav_file)
+                            #result = model.transcribe(temp_wav_file, verbose=False)
+                            #ffmpeg_tools.ffmpegPreprocessing.cleanup_file(temp_wav_file)
                             result = model.transcribe(input_file, verbose=False)
 
                             for segment in result['segments']:
@@ -93,17 +114,25 @@ class TranscriptionWorker(QThread):
                             overall_progress = int((i + 1) / total_files * 100)
                             self.update_progress_signal.emit(overall_progress)
                 except Exception as e:
+                    print(input_file)
+                    #raise e
                     print(f"Error during transcription: {e}", file=sys.stderr)
                     self.error_signal.emit(f"Error writing to output folder: {e}")
                     return
             else:
                 for i, input_file in enumerate(files_to_process):
+
                     self.update_status_signal.emit(f"Transcribing file: {os.path.basename(input_file)}")
+
+                    # temp_wav_file = os.path.join("mediator", "output.wav")
+                    # ffmpeg_tools.ffmpegPreprocessing.convert_to_wav(input_file=input_file, output_file=temp_wav_file)
+                    # result = model.transcribe(temp_wav_file, verbose=False)
+                    # ffmpeg_tools.ffmpegPreprocessing.cleanup_file(temp_wav_file)
                     result = model.transcribe(input_file, verbose=False)
 
                     output_file_path = os.path.join(self.output_folder, os.path.basename(input_file) + ".txt")
                     try:
-                        with open(output_file_path, 'w', encoding='utf-8-sig') as output_file:
+                        with open(normalize_path(output_file_path), 'w', encoding='utf-8-sig') as output_file:
                             for segment in result['segments']:
                                 start_time = segment['start']
                                 end_time = segment['end']
@@ -113,6 +142,8 @@ class TranscriptionWorker(QThread):
                                 else:
                                     output_file.write(f"{text}\n")
                     except Exception as e:
+                        print(input_file)
+                        #raise e
                         print(f"Error during transcription: {e}", file=sys.stderr)
                         self.error_signal.emit(f"Error writing to output folder: {e}")
                         return
@@ -123,6 +154,7 @@ class TranscriptionWorker(QThread):
             self.transcription_complete_signal.emit()
 
         except Exception as e:
+            #raise e
             print(f"Error during transcription: {e}", file=sys.stderr)
             self.error_signal.emit(f"Error during transcription: {e}")
 
@@ -277,8 +309,8 @@ class TranscriptionApp(QWidget):
         include_timestamps = self.timestamp_checkbox.isChecked()
         output_format = "csv" if self.output_csv_radio.isChecked() else "txt"
 
-        input_folder = self.input_folder_label.toolTip()
-        output_folder = self.output_folder_label.toolTip()
+        input_folder = normalize_path(self.input_folder_label.toolTip())
+        output_folder = normalize_path(self.output_folder_label.toolTip())
 
         if not input_folder or not output_folder:
             self.update_status("Please select both input and output folders.")
