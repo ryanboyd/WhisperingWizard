@@ -42,7 +42,7 @@ No need to go on a quest for FFmpeg – Whispering Wizard **doesn’t even look 
 ## FAQ 🧩
 
 - **Q**: What audio formats can Whispering Wizard handle?
-  - **A**: Anything from `.mp3`, `.wav`, `.flac`, to `.m4a`, `.ogg`, `.mp4`, `.webm`. If it makes sound, we can probably transcribe it.
+  - **A**: Anything from `.mp3`, `.wav`, `.flac`, to `.m4a`, `.ogg`, `.mp4`, `.webm`. If it makes sound, *Whispering Wizard* can probably transcribe it.
 
 - **Q**: Does Whispering Wizard need an internet connection?
   - **A**: Only for the first time, when it downloads its very own copy of FFmpeg and any time you need to download a new Whisper model. After that, you’re good to go offline and transcribe to your heart's content!
