@@ -4,6 +4,8 @@ Welcome to **Whispering Wizard** – the spellbindingly simple transcription too
 
 This is a **zero-hassle** app designed for folks who just want to get their audio transcribed without fiddling around with techy stuff. No FFmpeg installed? No problem! Whispering Wizard doesn’t care about what’s on your system – it **downloads its very own enchanted version** of FFmpeg right into its folder. And if that’s not enough magic for you, it’ll also summon any Whisper model you choose, ensuring you’ve got the power to transcribe your way.
 
+Importantly, all processing of your audio files is done locally on your computer - this application does not use the Whisper API, and your data is not transmitted to the cloud, or anywhere.
+
 ## Features ✨
 
 - **Magical FFmpeg Setup**: You don’t need to lift a finger (or type a command) to install FFmpeg. Whispering Wizard downloads its own local copy – no muss, no fuss.
