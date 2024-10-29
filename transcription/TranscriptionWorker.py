@@ -5,10 +5,14 @@ import datetime
 import itertools
 import time
 import csv
+import subprocess
 from datetime import datetime
 from .normalize_path import normalize_path
 from PyQt5.QtCore import QThread, pyqtSignal
 
+# Global lists for supported formats
+AUDIO_FORMATS = ["mp3", "wav", "flac", "m4a", "ogg"]
+VIDEO_FORMATS = ["mp4", "webm", "mov", "avi", "mkv", "flv", "wmv", "mpeg", "mpg", "3gp", "asf"]
 
 class TranscriptionWorker(QThread):
     update_status_signal = pyqtSignal(str)
@@ -24,118 +28,104 @@ class TranscriptionWorker(QThread):
         self.include_timestamps = include_timestamps
         self.output_format = output_format
 
+        # Create "conversions" folder for temporary wav files
+        self.conversions_folder = "conversions"
+        os.makedirs(self.conversions_folder, exist_ok=True)
+
     def run(self):
         try:
-            file_extensions = ["mp3", "wav", "flac", "m4a", "ogg", "mp4", "webm"]
-
             self._spinner_running = True
             spinner_thread = QThread()
             spinner_thread.run = self.start_spinner
             spinner_thread.start()
 
-            # Define the custom directory for models
             model_dir = normalize_path("whisper_models")
             os.makedirs(model_dir, exist_ok=True)
 
-            # Load the model from the custom directory
             model = whisper.load_model(self.model_name, download_root=model_dir)
 
-            # Stop the spinner once the model is downloaded
             self._spinner_running = False
             spinner_thread.wait()
 
             self.update_status_signal.emit("Model loaded successfully.")
 
-            files_to_process = self.list_files_with_extensions(self.input_folder, file_extensions)
-
+            files_to_process = self.list_files_with_extensions(self.input_folder)
             total_files = len(files_to_process)
 
             if self.output_format == "csv":
                 csv_filename = self.get_csv_filename()
                 csv_filepath = os.path.join(self.output_folder, csv_filename)
 
-                try:
-                    with open(normalize_path(csv_filepath), mode='w', newline='', encoding='utf-8-sig') as csv_file:
-                        csv_writer = csv.writer(csv_file)
-                        header = ['filename', 'start_time', 'stop_time', 'text'] if self.include_timestamps else ['filename', 'text']
-                        csv_writer.writerow(header)
+                with open(normalize_path(csv_filepath), mode='w', newline='', encoding='utf-8-sig') as csv_file:
+                    csv_writer = csv.writer(csv_file)
+                    header = ['filename', 'start_time', 'stop_time', 'text'] if self.include_timestamps else ['filename', 'text']
+                    csv_writer.writerow(header)
 
-                        for i, input_file in enumerate(files_to_process):
-                            self.update_status_signal.emit(f"Transcribing file: {os.path.basename(input_file)}")
-
-                            #temp_wav_file = os.path.join("mediator", "output.wav")
-                            #ffmpeg_tools.ffmpegPreprocessing.convert_to_wav(input_file=input_file, output_file=temp_wav_file)
-                            #result = model.transcribe(temp_wav_file, verbose=False)
-                            #ffmpeg_tools.ffmpegPreprocessing.cleanup_file(temp_wav_file)
-                            result = model.transcribe(input_file, verbose=False)
-
-                            for segment in result['segments']:
-                                start_time = segment['start']
-                                end_time = segment['end']
-                                text = segment['text'].strip()
-
-                                if self.include_timestamps:
-                                    csv_writer.writerow([os.path.basename(input_file), start_time, end_time, text])
-                                else:
-                                    csv_writer.writerow([os.path.basename(input_file), text])
-
-                            overall_progress = int((i + 1) / total_files * 100)
-                            self.update_progress_signal.emit(overall_progress)
-                except Exception as e:
-                    print(input_file)
-                    #raise e
-                    print(f"Error during transcription: {e}", file=sys.stderr)
-                    self.error_signal.emit(f"Error writing to output folder: {e}")
-                    return
+                    for i, input_file in enumerate(files_to_process):
+                        self.process_and_transcribe_file(input_file, csv_writer, model)
+                        overall_progress = int((i + 1) / total_files * 100)
+                        self.update_progress_signal.emit(overall_progress)
             else:
                 for i, input_file in enumerate(files_to_process):
-
-                    self.update_status_signal.emit(f"Transcribing file: {os.path.basename(input_file)}")
-
-                    # temp_wav_file = os.path.join("mediator", "output.wav")
-                    # ffmpeg_tools.ffmpegPreprocessing.convert_to_wav(input_file=input_file, output_file=temp_wav_file)
-                    # result = model.transcribe(temp_wav_file, verbose=False)
-                    # ffmpeg_tools.ffmpegPreprocessing.cleanup_file(temp_wav_file)
-                    result = model.transcribe(input_file, verbose=False)
-
-                    output_file_path = os.path.join(self.output_folder, os.path.basename(input_file) + ".txt")
-                    try:
-                        with open(normalize_path(output_file_path), 'w', encoding='utf-8-sig') as output_file:
-                            for segment in result['segments']:
-                                start_time = segment['start']
-                                end_time = segment['end']
-                                text = segment['text'].strip()
-                                if self.include_timestamps:
-                                    output_file.write(f"[{start_time:.2f}s - {end_time:.2f}s]: {text}\n")
-                                else:
-                                    output_file.write(f"{text}\n")
-                    except Exception as e:
-                        print(input_file)
-                        #raise e
-                        print(f"Error during transcription: {e}", file=sys.stderr)
-                        self.error_signal.emit(f"Error writing to output folder: {e}")
-                        return
-
+                    self.process_and_transcribe_file(input_file, None, model)
                     overall_progress = int((i + 1) / total_files * 100)
                     self.update_progress_signal.emit(overall_progress)
 
             self.transcription_complete_signal.emit()
 
         except Exception as e:
-            #raise e
             print(f"Error during transcription: {e}", file=sys.stderr)
             self.error_signal.emit(f"Error during transcription: {e}")
+
+    def process_and_transcribe_file(self, input_file, csv_writer, model):
+        self.update_status_signal.emit(f"Processing file: {os.path.basename(input_file)}")
+
+        if any(input_file.lower().endswith(ext) for ext in VIDEO_FORMATS):  # Check if it's a video file
+            temp_wav_file = os.path.join(self.conversions_folder, "temp_audio.wav")
+            self.convert_to_wav(input_file, temp_wav_file)
+            result = model.transcribe(temp_wav_file, verbose=False)
+            os.remove(temp_wav_file)  # Clean up temporary file
+        else:
+            result = model.transcribe(input_file, verbose=False)
+
+        self.write_transcription(result, input_file, csv_writer)
+
+    def convert_to_wav(self, input_file, output_wav_file):
+        command = ["ffmpeg", "-i", input_file, "-ar", "16000", "-ac", "1", output_wav_file]
+        subprocess.run(command, check=True, shell=False)  # Run the conversion
+
+    def write_transcription(self, result, input_file, csv_writer):
+        if csv_writer:
+            for segment in result['segments']:
+                start_time = segment['start']
+                end_time = segment['end']
+                text = segment['text'].strip()
+                if self.include_timestamps:
+                    csv_writer.writerow([os.path.basename(input_file), start_time, end_time, text])
+                else:
+                    csv_writer.writerow([os.path.basename(input_file), text])
+        else:
+            output_file_path = os.path.join(self.output_folder, os.path.basename(input_file) + ".txt")
+            with open(normalize_path(output_file_path), 'w', encoding='utf-8-sig') as output_file:
+                for segment in result['segments']:
+                    start_time = segment['start']
+                    end_time = segment['end']
+                    text = segment['text'].strip()
+                    if self.include_timestamps:
+                        output_file.write(f"[{start_time:.2f}s - {end_time:.2f}s]: {text}\n")
+                    else:
+                        output_file.write(f"{text}\n")
 
     def get_csv_filename(self):
         now = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         return f"{now} - Whispering Wizard Output.csv"
 
-    def list_files_with_extensions(self, folder_path: str, file_extensions: list) -> list:
+    def list_files_with_extensions(self, folder_path: str) -> list:
         file_list = []
-        file_extensions = [ext.lower() for ext in file_extensions]
+        supported_extensions = AUDIO_FORMATS + VIDEO_FORMATS  # Combine audio and video formats
         for root, dirs, files in os.walk(folder_path):
             for file in files:
-                if any(file.lower().endswith(ext) for ext in file_extensions):
+                if any(file.lower().endswith(ext) for ext in supported_extensions):
                     file_list.append(os.path.join(root, file))
         return file_list
 

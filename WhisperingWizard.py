@@ -10,7 +10,6 @@ from PyQt5.QtGui import QFont, QIcon
 from transcription.TranscriptionWorker import TranscriptionWorker
 from transcription.normalize_path import normalize_path
 from ffmpeg_tools.DownloadFFmpeg import DownloadFFmpegThread
-#import ffmpeg_tools.ffmpegPreprocessing
 
 # Check if running from a PyInstaller bundle
 if hasattr(sys, '_MEIPASS'):
