@@ -14,6 +14,10 @@ from PyQt5.QtCore import QThread, pyqtSignal
 AUDIO_FORMATS = ["mp3", "wav", "flac", "m4a", "ogg"]
 VIDEO_FORMATS = ["mp4", "webm", "mov", "avi", "mkv", "flv", "wmv", "mpeg", "mpg", "3gp", "asf"]
 
+# Import the flag specifically for Windows
+if os.name == 'nt':  # Only import on Windows
+    CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW
+
 class TranscriptionWorker(QThread):
     update_status_signal = pyqtSignal(str)
     update_progress_signal = pyqtSignal(int)
@@ -92,7 +96,14 @@ class TranscriptionWorker(QThread):
 
     def convert_to_wav(self, input_file, output_wav_file):
         command = ["ffmpeg", "-i", input_file, "-ar", "16000", "-ac", "1", output_wav_file]
-        subprocess.run(command, check=True, shell=False)  # Run the conversion
+        subprocess.run(
+            command,
+            check=True,
+            stdout=sys.stdout,
+            stderr=sys.stderr,
+            shell=False,
+            creationflags=CREATE_NO_WINDOW if os.name == 'nt' else 0  # Apply only on Windows
+        )
 
     def write_transcription(self, result, input_file, csv_writer):
         if csv_writer:
