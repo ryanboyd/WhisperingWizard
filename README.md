@@ -9,10 +9,12 @@ Importantly, all processing of your audio files is done locally on your computer
 ## Features ✨
 
 - **Magical FFmpeg Setup**: You don’t need to lift a finger (or type a command) to install FFmpeg. Whispering Wizard downloads its own local copy – no muss, no fuss.
-- **Whisper Model Support**: Choose from a range of Whisper models – from `tiny` to the mighty `large` and `turbo` models – depending on how fast or accurate you need your transcriptions to be.
-- **Audio Format Wizardry**: Handles `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.mp4`, `.webm`, and more! Your files will feel like they’re in a mystical cauldron of compatibility.
-- **Timestamp Sorcery**: Want timestamps? Just check a box and they’ll appear in your transcripts like clockwork.
+- **Whisper Model Support**: Choose from a range of Whisper models – from the petite `tiny` to the mighty `large` and `turbo` models – depending on how fast or accurate you need your transcriptions to be.
+- **Audio Format Wizardry**: Whispering Wizard transcribes audio from various formats, handling `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.webm`, and more. Your files will feel like they’re in a mystical cauldron of compatibility.
+- **Video Format Enchantment**: Whispering Wizard can now extract and transcribe audio directly from popular video formats, including `.mp4`, `.mov`, `.avi`, `.mkv`, `.flv`, `.wmv`, `.mpeg`, `.3gp`, `.asf`, and more! Just drop in your video files, and let the magic reveal their voices.
+- **Timestamp Sorcery**: Want timestamps? Just check a box, and they’ll appear in your transcripts like clockwork.
 - **Custom Output Magic**: Get your transcriptions as individual `.txt` files or a single, organized `.csv`. Your text, your way.
+
 
 ## How to Use 🧙‍♀️
 
