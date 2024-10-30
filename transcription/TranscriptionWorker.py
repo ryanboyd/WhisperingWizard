@@ -14,9 +14,60 @@ from PyQt5.QtCore import QThread, pyqtSignal
 AUDIO_FORMATS = ["mp3", "wav", "flac", "m4a", "ogg"]
 VIDEO_FORMATS = ["mp4", "webm", "mov", "avi", "mkv", "flv", "wmv", "mpeg", "mpg", "3gp", "asf"]
 
-# Import the flag specifically for Windows
-if os.name == 'nt':  # Only import on Windows
-    CREATE_NO_WINDOW = subprocess.CREATE_NO_WINDOW
+# Monkey patching to suppress console windows for all subprocess
+#                 __------__
+#               /~          ~\
+#              |    //^\\//^\|
+#            /~~\  ||  o| |o|:~\
+#           | |6   ||___|_|_||:|
+#            \__.  /      o  \/'
+#             |   (       O   )
+#    /~~~~\    `\  \         /
+#   | |~~\ |     )  ~------~`\
+#  /' |  | |   /     ____ /~~~)\
+# (_/'   | | |     /'    |    ( |
+#        | | |     \    /   __)/ \
+#        \  \ \      \/    /' \   `\
+#          \  \|\        /   | |\___|
+#            \ |  \____/     | |
+#            /^~>  \        _/ <
+#           |  |         \       \
+#           |  | \        \        \
+#           -^-\  \       |        )
+#                `\_______/^\______/
+
+def no_console_popen(*args, **kwargs):
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    return original_popen(*args, **kwargs)
+
+def no_console_call(*args, **kwargs):
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    return original_call(*args, **kwargs)
+
+def no_console_run(*args, **kwargs):
+    # Set creationflags to suppress the console window
+    if os.name == "nt":
+        kwargs["creationflags"] = subprocess.CREATE_NO_WINDOW
+    return original_run(*args, **kwargs)
+
+# Keep references to the original subprocess functions
+original_run = subprocess.run
+original_popen = subprocess.Popen
+original_call = subprocess.call
+
+# Override subprocess functions
+subprocess.run = no_console_run
+subprocess.Popen = no_console_popen
+subprocess.call = no_console_call
+
+
+# End of monkey patching
+# End of monkey patching
+# End of monkey patching
+
+
 
 class TranscriptionWorker(QThread):
     update_status_signal = pyqtSignal(str)
