@@ -152,8 +152,6 @@ class TranscriptionWorker(QThread):
             check=True,
             stdout=sys.stdout,
             stderr=sys.stderr,
-            shell=False,
-            creationflags=CREATE_NO_WINDOW if os.name == 'nt' else 0  # Apply only on Windows
         )
 
     def write_transcription(self, result, input_file, csv_writer):
