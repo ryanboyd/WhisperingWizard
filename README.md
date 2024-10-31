@@ -6,6 +6,8 @@ This is a **zero-hassle** app designed for folks who just want to get their audi
 
 Importantly, all processing of your audio files is done locally on your computer - this application does not use the Whisper API, and your data is not transmitted to the cloud, or anywhere.
 
+To download the latest version of _Whispering Wizard_, just head over to the [releases page](https://github.com/ryanboyd/WhisperingWizard/releases). You can also run/build/modify the program directly from the source code as well 🎃
+
 ## Features ✨
 
 - **Magical FFmpeg Setup**: You don’t need to lift a finger (or type a command) to install FFmpeg. Whispering Wizard downloads its own local copy – no muss, no fuss.
@@ -14,10 +16,6 @@ Importantly, all processing of your audio files is done locally on your computer
 - **Video Format Enchantment**: Whispering Wizard can now extract and transcribe audio directly from popular video formats, including `.mp4`, `.mov`, `.avi`, `.mkv`, `.flv`, `.wmv`, `.mpeg`, `.3gp`, `.asf`, and more! Just drop in your video files, and let the magic reveal their voices.
 - **Timestamp Sorcery**: Want timestamps? Just check a box, and they’ll appear in your transcripts like clockwork.
 - **Custom Output Magic**: Get your transcriptions as individual `.txt` files or a single, organized `.csv`. Your text, your way.
-
-## How to Run
-
-To download the latest version of _Whispering Wizard_, just head over to the [releases page](https://github.com/ryanboyd/WhisperingWizard/releases). You can also run/build/modify the program directly from the source code as well 🎃
 
 
 ## How to Use 🧙‍♀️
