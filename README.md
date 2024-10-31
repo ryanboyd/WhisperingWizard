@@ -15,6 +15,10 @@ Importantly, all processing of your audio files is done locally on your computer
 - **Timestamp Sorcery**: Want timestamps? Just check a box, and they’ll appear in your transcripts like clockwork.
 - **Custom Output Magic**: Get your transcriptions as individual `.txt` files or a single, organized `.csv`. Your text, your way.
 
+## How to Run
+
+To download the latest version of _Whispering Wizard_, just head over to the [releases page](https://github.com/ryanboyd/WhisperingWizard/releases). You can also run/build/modify the program directly from the source code as well 🎃
+
 
 ## How to Use 🧙‍♀️
 
