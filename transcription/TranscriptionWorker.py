@@ -75,6 +75,8 @@ class TranscriptionWorker(QThread):
     transcription_complete_signal = pyqtSignal()
     error_signal = pyqtSignal(str)
 
+    MAX_FILENAME_LENGTH = 50
+
     def __init__(self, input_folder, output_folder, model_name, include_timestamps, output_format, parent=None):
         super().__init__(parent)
         self.input_folder = input_folder
@@ -110,19 +112,23 @@ class TranscriptionWorker(QThread):
             if self.output_format == "csv":
                 csv_filename = self.get_csv_filename()
                 csv_filepath = os.path.join(self.output_folder, csv_filename)
-
                 with open(normalize_path(csv_filepath), mode='w', newline='', encoding='utf-8-sig') as csv_file:
                     csv_writer = csv.writer(csv_file)
-                    header = ['filename', 'start_time', 'stop_time', 'text'] if self.include_timestamps else ['filename', 'text']
+                    header = ['filename', 'start_time', 'stop_time', 'text'] if self.include_timestamps else [
+                        'filename', 'text']
                     csv_writer.writerow(header)
 
                     for i, input_file in enumerate(files_to_process):
+                        self.start_file_spinner(input_file)  # Start the spinner for each file
                         self.process_and_transcribe_file(input_file, csv_writer, model)
+                        self.stop_file_spinner()  # Stop spinner after file is processed
                         overall_progress = int((i + 1) / total_files * 100)
                         self.update_progress_signal.emit(overall_progress)
             else:
                 for i, input_file in enumerate(files_to_process):
+                    self.start_file_spinner(input_file)
                     self.process_and_transcribe_file(input_file, None, model)
+                    self.stop_file_spinner()
                     overall_progress = int((i + 1) / total_files * 100)
                     self.update_progress_signal.emit(overall_progress)
 
@@ -195,3 +201,29 @@ class TranscriptionWorker(QThread):
         while self._spinner_running:
             self.update_status_signal.emit(f"Downloading/loading model: {self.model_name}... {next(spinner)}")
             time.sleep(0.2)
+
+    def truncate_filename(self, filename):
+        """Truncate the filename to prevent overflow, adding ellipsis if too long."""
+        if len(filename) > self.MAX_FILENAME_LENGTH:
+            return filename[:self.MAX_FILENAME_LENGTH - 1] + "…"  # Add ellipsis
+        return filename
+
+    def start_file_spinner(self, input_file):
+        """Initialize spinner for each file."""
+        self._file_spinner_running = True
+        self.file_spinner_thread = QThread()
+        truncated_filename = self.truncate_filename(os.path.basename(input_file))
+        self.file_spinner_thread.run = lambda: self.file_spinner(truncated_filename)
+        self.file_spinner_thread.start()
+
+    def file_spinner(self, filename):
+        """Spinner animation while processing each file."""
+        spinner = itertools.cycle(["|", "/", "–", "\\"])
+        while self._file_spinner_running:
+            self.update_status_signal.emit(f"Processing file: {filename} {next(spinner)}")
+            time.sleep(0.2)
+
+    def stop_file_spinner(self):
+        """Stop spinner for each file."""
+        self._file_spinner_running = False
+        self.file_spinner_thread.wait()
